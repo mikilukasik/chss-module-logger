@@ -3,10 +3,21 @@ export const clientLogger = ({ msgClient }) => {
 
   const loggerSocket = msgClient.ws(`ws://${typeof self === 'undefined' || self.location.hostname}:3300/logger`);
 
-  self.onerror = (message, source, lineno, colno, error) => loggerSocket.do('storeLog', { type: 'error', message, source, lineno, colno, error, stack: error.stack });
+  self.onerror = (message, source, lineno, colno, error) => {
+    loggerSocket.do('storeLog', { type: 'error', message, source, lineno, colno, error, stack: (error || {}).stack });
+  };
+
   self.addEventListener('error', (e) => {
-    loggerSocket.do('storeLog', { type: 'error', message: e.error.message, stack: e.error.stack });
+    loggerSocket.do('storeLog', {
+      type: 'error',
+      message: (e.message || (e.error || {}).message),
+      stack: (e.stack || (e.error || {}).stack),
+      filename: e.filename,
+      lineno: e.lineno,
+      colno: e.colno
+    });
   });
+  
   self.addEventListener('unhandledrejection', (e) => {
     loggerSocket.do('storeLog', { type: 'error', message: e.reason.message, stack: e.reason.stack });
   });
