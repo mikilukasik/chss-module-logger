@@ -1,5 +1,5 @@
 export const clientLogger = ({ msgClient }) => {
-  if (!self) return;
+  if (typeof self === 'undefined') return;
 
   const loggerSocket = msgClient.ws(`ws://${typeof self === 'undefined' || self.location.hostname}:3300/logger`);
 
